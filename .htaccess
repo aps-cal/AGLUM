@@ -1,0 +1,83 @@
+
+#RewriteEngine On
+#RewriteCond $1 !^(index\.php|images|styles|robots\.txt)
+#RewriteRule ^(.*)$ index.php/$1 [L]
+
+# Allow only PHP to access CSS Style files
+<FilesMatch "\.(css|style)$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+# USEFUL NOTES IN .htaccess Rules 
+# [L] = Last Rule - Don't process any more rules for this Condition
+# [R] = Redirect - Don't hide redirection actually show user new URL
+# [NC] = NoCase - Makes this Rule case-insensitive 
+
+# Check if Rewrite Module is loaded i.e. Possible
+<IfModule mod_rewrite.c>
+
+    RewriteEngine On
+    RewriteBase /
+
+    DirectoryIndex index.php index.html index.htm
+    
+    
+    #Removes access to the system folder by users.
+    #Additionally this will allow you to create a System.php controller,
+    #previously this would not have been possible.
+    #'system' can be replaced if you have renamed your system folder.
+    RewriteCond %{REQUEST_URI} ^system.*
+    RewriteRule ^(.*)$ index.php?/$1 [L]
+    
+    #When your application folder isn't in the system folder
+    #This snippet prevents user access to the application folder
+    #Submitted by: Fabdrol
+    #Rename 'application' to your applications folder name.
+    RewriteCond %{REQUEST_URI} ^application.*
+    RewriteRule ^(.*)$ index.php?/$1 [L]
+
+    # Testing
+
+    # Process URLs differently depending on the domain used to call them
+    RewriteCond %{HTTP_HOST} localhost 
+    RewriteCond %{REQUEST_URI} !^/aldb
+    RewriteRule ^(.*)$ ../aldb/index.php?/$1 [L, NC]
+
+
+    # Process URLs differently depending on the domain used to call them
+    RewriteCond %{HTTP_HOST} aldb.warwick.ac.uk 
+    RewriteCond %{REQUEST_URI} !^/aldb
+    RewriteRule ^(.*)$ ../aldb/index.php?/$1 [L, NC]
+
+    # Process URLs differently depending on the domain used to call them
+    RewriteCond %{HTTP_HOST} mycalonline.org.uk
+    RewriteCond %{REQUEST_URI} !^/naba.net
+    RewriteRule ^(.*)$ ../naba.net/index.php?/$1 [L, NC]
+
+    # Process URLs differently depending on the domain used to call them
+    RewriteCond %{HTTP_HOST} mycal.warwick.ac.uk
+    RewriteCond %{REQUEST_URI} !^/MyEconomics
+    RewriteRule ^(.*)$ ../MyEconomics/$1 [L, NC]
+
+    # Process URLs differently depending on the domain used to call them
+    RewriteCond %{HTTP_HOST} aglum.lnx.warwick.ac.uk 
+    RewriteCond %{REQUEST_URI} !^/
+    RewriteRule ^(.*)$ ../index.php?/$1 [L, NC]
+
+
+
+    #Checks to see if the user is attempting to access a valid file,
+    #such as an image or css document, if this isn't true it sends the
+    #request to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /index.php?/$1 [L]
+
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # If we don't have mod_rewrite installed, all 404's
+    # can be sent to index.php, and everything works as normal.
+    # Submitted by: ElliotHaughin
+    ErrorDocument 404 index.php
+</IfModule>
